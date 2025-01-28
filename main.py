@@ -6,13 +6,60 @@ from Schema import SCHEMA  # Import the SCHEMA from Schema.py
 import uvicorn
 import yaml
 from jsonschema import validate, ValidationError, SchemaError
+import psycopg2
+import psycopg2.extras
+from contextlib import asynccontextmanager
 
+# Why can you not just go directly from string to things such as dbname, user, password
+DB_NAME = "postgres"  
+DB_USER = "Intern-Project"
+DB_PASSWORD = "Yash214!"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+
+conn = psycopg2.connect(
+    dbname=DB_NAME,
+    user=DB_USER,
+    password=DB_PASSWORD,
+    host=DB_HOST,
+    port=DB_PORT
+)
+conn.autocommit = True
 
 APP = FastAPI()
 
-# Helps with storing configurations
-DB = {}
-CONFIG_ID_COUNTER = 1
+
+#VS CODE recommended I change from APP.on_event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_table_sql = """
+    CREATE TABLE IF NOT EXISTS configs (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        age INT NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        is_active BOOLEAN,
+        hobbies TEXT[],
+        street VARCHAR(100),
+        city VARCHAR(100),
+        zip_code VARCHAR(20),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+    """
+    with conn.cursor() as cur:
+        cur.execute(create_table_sql)
+
+    print("Startup: Table created or already exists.")
+
+    # Yield's letting command run
+    yield
+
+  
+    conn.close()
+    print("Shutdown: Database connection closed.")
+
+
 
 # Function to validate YAML content, will return the type of error
 def VALIDATE_YAML(yaml_content: str):
@@ -50,44 +97,52 @@ def ADD_CONFIG(
     age: int = Query(..., ge=0, description="Age must be a non-negative integer"),
     email: EmailStr = Query(..., description="Valid email address"),
     is_active: Optional[bool] = Query(None, description="User active status"),
-    hobbies: Optional[str] = Query(None, description="List of hobbies (comma-separated)"),
+    hobbies: Optional[str] = Query(None, description="List of hobbies"),
     street: Optional[str] = Query(None, description="Street address"),
     city: Optional[str] = Query(None, description="City name"),
     zip_code: Optional[str] = Query(None, description="ZIP code"),
 ):
     """
-    Add a new configuration to the in-memory database.
+    Add a new configuration to the PostgreSQL database.
     """
-    # Used to track the IDs
-    global CONFIG_ID_COUNTER
-    new_config = {
-        "id": CONFIG_ID_COUNTER,
-        "name": name,
-        "age": age,
-        "email": email,
-        "is_active": is_active,
-        "hobbies": hobbies.split(",") if hobbies else [],
-        "address": {
-            "street": street,
-            "city": city,
-            "zip_code": zip_code
-        }
-    }
+  # Could alter this
+    hobbies_list = hobbies.split(",") if hobbies else []
 
-    # Store new configuration in DB, and add an increment for when a new ID is created
-    DB[CONFIG_ID_COUNTER] = new_config
-    CONFIG_ID_COUNTER += 1
-    return new_config
+    insert_sql = """
+        INSERT INTO configs (name, age, email, is_active, hobbies, street, city, zip_code)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id, name, age, email, is_active, hobbies, street, city, zip_code;
+    """
+    values = (name, age, email, is_active, hobbies_list, street, city, zip_code)
+
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(insert_sql, values)
+        new_record = cur.fetchone()  
+
+    return new_record
+    
 
 # Retrieve Configuration based on the ID
 @APP.get("/configs/{ID}")
 def GET_CONFIG(ID: int):
     """
-    Retrieve a configuration by its ID.
+    Retrieve a configuration by its ID from the PostgreSQL database.
     """
-    if ID not in DB:
+
+    select_sql = """
+        SELECT id, name, age, email, is_active, hobbies, street, city, zip_code
+        FROM configs
+        WHERE id = %s;
+    """
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(select_sql, (ID,))
+        record = cur.fetchone()
+    
+    if not record:
         raise HTTPException(status_code=404, detail="Config not found")
-    return DB[ID]
+
+    return record
+
 
 # Updates the Configuration of an ID
 @APP.put("/configs/{ID}")
@@ -103,40 +158,59 @@ def UPDATE_CONFIG(
     zip_code: Optional[str] = Query(None, description="ZIP code"),
 ):
     """
-    Update an existing configuration by ID.
+    Update an existing configuration by ID in the PostgreSQL database.
     """
-    if ID not in DB:
+    hobbies_list = hobbies.split(",") if hobbies else []
+
+    update_sql = """
+        UPDATE configs
+        SET
+            name = %s,
+            age = %s,
+            email = %s,
+            is_active = %s,
+            hobbies = %s,
+            street = %s,
+            city = %s,
+            zip_code = %s,
+            updated_at = NOW()
+        WHERE id = %s
+        RETURNING id, name, age, email, is_active, hobbies, street, city, zip_code;
+    """
+    values = (name, age, email, is_active, hobbies_list, street, city, zip_code, ID)
+
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(update_sql, values)
+        updated_record = cur.fetchone()
+
+    if not updated_record:
         raise HTTPException(status_code=404, detail="Config not found")
-    # Updates the existing configuration with new values
-    DB[ID] = {
-        "id": ID,
-        "name": name,
-        "age": age,
-        "email": email,
-        "is_active": is_active,
-        "hobbies": hobbies.split(",") if hobbies else [],
-        "address": {
-            "street": street,
-            "city": city,
-            "zip_code": zip_code
-        }
-    }
-    return DB[ID]
+
+    return updated_record
+   
 
 # Deletes the configuration based on its ID
 @APP.delete("/configs/{ID}")
 def DELETE_CONFIG(ID: int):
     """
-    Delete a configuration by its ID.
+    Delete a configuration by its ID from the PostgreSQL database.
     """
-    if ID not in DB:
+    delete_sql = "DELETE FROM configs WHERE id = %s RETURNING id;"
+    with conn.cursor() as cur:
+        cur.execute(delete_sql, (ID,))
+        deleted = cur.fetchone()
+
+    if not deleted:
         raise HTTPException(status_code=404, detail="Config not found")
-    del DB[ID]
+    
     return {"message": f"Config with ID {ID} has been deleted."}
+
+
 
 # This executes the code and creates a localhost webpage
 def MAIN():
-    uvicorn.run(APP, host="127.0.0.1", port=8000)
+    APP = FastAPI(lifespan=lifespan)
+    uvicorn.run(APP, host="127.0.0.1", port=9000)
 
 if __name__ == "__main__":
     MAIN()
