@@ -9,54 +9,7 @@ from jsonschema import validate, ValidationError, SchemaError
 import psycopg2
 import psycopg2.extras
 from contextlib import asynccontextmanager
-
-# Connecting to the PostgreSQL database
-DB_NAME = "postgres"  
-DB_USER = "Intern-Project"
-DB_PASSWORD = "Yash214!"
-DB_HOST = "localhost"
-DB_PORT = "5432"
-
-conn = psycopg2.connect(
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    host=DB_HOST,
-    port=DB_PORT
-)
-conn.autocommit = True
-
-APP = FastAPI()
-
-
-# FastAPI Lifespan to manage startup/shutdown
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # SQL query to create the required table if it does not exist
-    create_table_sql = """
-    CREATE TABLE IF NOT EXISTS configs (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        age INT NOT NULL,
-        email VARCHAR(100) NOT NULL,
-        is_active BOOLEAN,
-        hobbies TEXT[],
-        street VARCHAR(100),
-        city VARCHAR(100),
-        zip_code VARCHAR(20),
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-    );
-    """
-    with conn.cursor() as cur:
-        cur.execute(create_table_sql) # create table
-
-    print("Startup: Table created or already exists.")
- 
-    yield # Yield's letting command run
-
-    conn.close()
-    print("Shutdown: Database connection closed.")
+from database import APP, conn  # Import the FastAPI instance and DB connection
 
 
 
@@ -222,7 +175,6 @@ def DELETE_CONFIG(ID: int):
 
 # This executes the code and creates a localhost webpage
 def MAIN():
-    APP = FastAPI(lifespan=lifespan)
     uvicorn.run(APP, host="127.0.0.1", port=9000)
 
 if __name__ == "__main__":
