@@ -10,7 +10,7 @@ import psycopg2
 import psycopg2.extras
 from contextlib import asynccontextmanager
 
-# Why can you not just go directly from string to things such as dbname, user, password
+# Connecting to the PostgreSQL database
 DB_NAME = "postgres"  
 DB_USER = "Intern-Project"
 DB_PASSWORD = "Yash214!"
@@ -29,9 +29,10 @@ conn.autocommit = True
 APP = FastAPI()
 
 
-#VS CODE recommended I change from APP.on_event
+# FastAPI Lifespan to manage startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # SQL query to create the required table if it does not exist
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS configs (
         id SERIAL PRIMARY KEY,
@@ -48,14 +49,12 @@ async def lifespan(app: FastAPI):
     );
     """
     with conn.cursor() as cur:
-        cur.execute(create_table_sql)
+        cur.execute(create_table_sql) # create table
 
     print("Startup: Table created or already exists.")
+ 
+    yield # Yield's letting command run
 
-    # Yield's letting command run
-    yield
-
-  
     conn.close()
     print("Shutdown: Database connection closed.")
 
@@ -76,6 +75,7 @@ def VALIDATE_YAML(yaml_content: str):
     except Exception as e:
         return {"is_valid": False, "error": f"Unexpected Error: {str(e)}"}
 
+
 # Compares the given YAML file to the SCHEMA, validating the file
 @APP.post("/validate", summary="Validate a YAML file against the defined schema")
 async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML file to be validated")):
@@ -89,6 +89,7 @@ async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML 
         return validation_result
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing file: {str(e)}")
+
 
 # Used to add a new configuration in the database
 @APP.post("/configs/")
@@ -105,9 +106,10 @@ def ADD_CONFIG(
     """
     Add a new configuration to the PostgreSQL database.
     """
-  # Could alter this
+    # Stored as a list
     hobbies_list = hobbies.split(",") if hobbies else []
 
+# SQL query to insert data into the configs table
     insert_sql = """
         INSERT INTO configs (name, age, email, is_active, hobbies, street, city, zip_code)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -115,6 +117,7 @@ def ADD_CONFIG(
     """
     values = (name, age, email, is_active, hobbies_list, street, city, zip_code)
 
+# Execute query and fetch new record
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(insert_sql, values)
         new_record = cur.fetchone()  
@@ -128,16 +131,18 @@ def GET_CONFIG(ID: int):
     """
     Retrieve a configuration by its ID from the PostgreSQL database.
     """
-
+# SQL query to fetch the configuration details for the given ID
     select_sql = """
         SELECT id, name, age, email, is_active, hobbies, street, city, zip_code
         FROM configs
         WHERE id = %s;
     """
+    # Execute the SQL query and fetch the record
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(select_sql, (ID,))
         record = cur.fetchone()
     
+    # If no record is found, raise a 404 error
     if not record:
         raise HTTPException(status_code=404, detail="Config not found")
 
@@ -160,8 +165,10 @@ def UPDATE_CONFIG(
     """
     Update an existing configuration by ID in the PostgreSQL database.
     """
+    # Convert hobbies string to a list if provided
     hobbies_list = hobbies.split(",") if hobbies else []
 
+ # SQL query to update the configuration details for the given ID
     update_sql = """
         UPDATE configs
         SET
@@ -179,10 +186,12 @@ def UPDATE_CONFIG(
     """
     values = (name, age, email, is_active, hobbies_list, street, city, zip_code, ID)
 
+ # Execute the SQL query and fetch the updated record
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(update_sql, values)
         updated_record = cur.fetchone()
 
+  # If no record is updated, raise a 404 error
     if not updated_record:
         raise HTTPException(status_code=404, detail="Config not found")
 
@@ -195,11 +204,15 @@ def DELETE_CONFIG(ID: int):
     """
     Delete a configuration by its ID from the PostgreSQL database.
     """
+    # SQL query to delete the configuration and return the deleted ID
     delete_sql = "DELETE FROM configs WHERE id = %s RETURNING id;"
+
+     # Execute the SQL query and check if a record was deleted
     with conn.cursor() as cur:
         cur.execute(delete_sql, (ID,))
         deleted = cur.fetchone()
 
+  # If no record is deleted, raise a 404 error
     if not deleted:
         raise HTTPException(status_code=404, detail="Config not found")
     
