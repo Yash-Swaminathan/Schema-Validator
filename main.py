@@ -8,7 +8,6 @@ import yaml
 from jsonschema import validate, ValidationError, SchemaError
 import psycopg2
 import psycopg2.extras
-from contextlib import asynccontextmanager
 from database import APP, conn  # Import the FastAPI instance and DB connection
 
 
