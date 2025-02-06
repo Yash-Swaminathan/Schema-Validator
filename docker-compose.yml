@@ -9,7 +9,10 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://Intern-Project:Yash214!@host.docker.internal:5432/postgres  
+      - DB_HOST=db           # Use the service name instead of host.docker.internal
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=Intern-Project
+      - POSTGRES_PASSWORD=Yash214!
     volumes:
       - .:/app
     restart: always
