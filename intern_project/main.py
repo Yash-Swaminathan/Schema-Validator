@@ -2,13 +2,13 @@
 from fastapi import FastAPI, HTTPException, Query, File, UploadFile
 from pydantic import BaseModel, EmailStr, Field
 from typing import Dict, Optional, List
-from Schema import SCHEMA  # Import the SCHEMA from Schema.py
+from intern_project.Schema import SCHEMA  # Import the SCHEMA from Schema.py
 import uvicorn
 import yaml
 from jsonschema import validate, ValidationError, SchemaError
 import psycopg2
 import psycopg2.extras
-from database import APP, conn  # Import the FastAPI instance and DB connection
+from intern_project.database import APP, conn  # Import the FastAPI instance and DB connection
 
 
 
@@ -60,7 +60,7 @@ def ADD_CONFIG(
     """
     # Stored as a list
     hobbies_list = hobbies.split(",") if hobbies else []
-
+    print("hi")
 # SQL query to insert data into the configs table
     insert_sql = """
         INSERT INTO configs (name, age, email, is_active, hobbies, street, city, zip_code)
@@ -73,7 +73,7 @@ def ADD_CONFIG(
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(insert_sql, values)
         new_record = cur.fetchone()  
-
+    print("here")
     return new_record
     
 
