@@ -68,6 +68,7 @@ def ADD_CONFIG(
         RETURNING id, name, age, email, is_active, hobbies, street, city, zip_code;
     """
     values = (name, age, email, is_active, hobbies_list, street, city, zip_code)
+    print(values)
 
 # Execute query and fetch new record
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -172,9 +173,9 @@ def DELETE_CONFIG(ID: int):
 
 
 
-# This executes the code and creates a localhost webpage
-def MAIN():
-    uvicorn.run(APP, host="127.0.0.1", port=9000)
+# # This executes the code and creates a localhost webpage
+# def MAIN():
+#     uvicorn.run(APP, host="127.0.0.1", port=9000)
 
-if __name__ == "__main__":
-    MAIN()
+# if __name__ == "__main__":
+#     MAIN()

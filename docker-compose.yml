@@ -3,19 +3,18 @@ services:
     build: .
     container_name: fastapi_app
     ports:
-      - "9000:9000"
+      - "8000:8000"
     depends_on:
       - db
     environment:
       - DB_HOST=postgres_db     
       - POSTGRES_DB=postgres
-      - POSTGRES_USER=Intern-Project
-      - POSTGRES_PASSWORD=Yash214!
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
       - PYTHONPATH=/app
     restart: always
     networks:
       - bridge
-    command: ["poetry", "run", "python3", "intern_project/main.py"]  
 
   db:
     image: postgres:latest
@@ -24,8 +23,8 @@ services:
     environment:
       DB_HOST: postgres_db
       POSTGRES_DB: postgres
-      POSTGRES_USER: Intern-Project
-      POSTGRES_PASSWORD: Yash214!
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
     networks:
       - bridge
