@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://Intern-Project:Yash214!@host.docker.internal:5432/postgres  
+    volumes:
+      - .:/app
+    restart: always
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: Intern-Project
+      POSTGRES_PASSWORD: Yash214!
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:

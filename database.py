@@ -2,13 +2,14 @@ import psycopg2
 from psycopg2 import extras
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
+import os
 
 # PostgreSQL Database Configuration
-DB_NAME = "postgres"  
-DB_USER = "Intern-Project"
-DB_PASSWORD = "Yash214!"
-DB_HOST = "localhost"
-DB_PORT = "5432"
+DB_NAME = os.getenv("POSTGRES_DB", "postgres")
+DB_USER = os.getenv("POSTGRES_USER", "Intern-Project")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "Yash214!")
+DB_HOST = os.getenv("DB_HOST", "host.docker.internal")  
+DB_PORT = os.getenv("DB_PORT", "5432")
 
 # Establishing the Connection
 conn = psycopg2.connect(
