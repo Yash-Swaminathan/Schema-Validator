@@ -26,7 +26,7 @@ This project is a **FastAPI-based service** that validates YAML configuration fi
 
 
 ## **Installation & Setup**
-### **1. Clone the Repository**
+### **1. Clone The Repository**
 ```sh
 git clone https://github.com/yashswaminathan/Intern-Project-1.git
 cd Intern-Project-1
@@ -49,10 +49,12 @@ Spin up a PostgreSQL database
 Expose APIs for validation and config management
 
 
-
-
-POST	/validate	Validate a YAML file against schema
-POST	/configs/	Add a new configuration
-GET	/configs/{id}	Retrieve a config by ID
-PUT	/configs/{id}	Update a config
-DELETE	/configs/{id}	Delete a config
+## **Frontend (React)**
+### **1. Start The Frontend**
+```sh
+cd frontend
+npm install
+npm start
+```
+Accessible at http://localhost:3000
+Built using Formik & Yup for form validation
