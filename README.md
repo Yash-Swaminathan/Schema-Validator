@@ -26,7 +26,27 @@ This project is a **FastAPI-based service** that validates YAML configuration fi
 
 ## **Project Structure**
 
-Intern-Project-1/ │── .vscode/ # VS Code configuration files │── intern_project/ │ ├── database.py # PostgreSQL connection & table creation │ ├── main.py # FastAPI endpoints for validation and config management │ ├── Schema.py # JSON Schema definitions for validation │── tests/ # Test cases for API │── frontend/ │ ├── App.jsx # React frontend with Formik │── docker-compose.yml # Dockerized environment setup │── dockerfile # Backend Docker setup │── poetry.lock # Poetry dependency lockfile │── pyproject.toml # Poetry dependencies │── README.md # Project documentation
+'''Intern-Project-1/
+'''
+├── .vscode/ # VS Code configuration files
+│
+├── intern_project/ # Backend application code
+│ ├── database.py # PostgreSQL connection & table creation
+│ ├── main.py # FastAPI endpoints for validation and config management
+│ ├── Schema.py # JSON Schema definitions for validation
+│
+├── tests/ # Test cases for API
+│
+├── frontend/ # Frontend application code
+│ ├── App.jsx # React frontend with Formik
+│
+├── docker-compose.yml # Dockerized environment setup
+├── Dockerfile # Backend Docker setup
+│
+├── poetry.lock # Poetry dependency lockfile
+├── pyproject.toml # Poetry dependencies
+│
+└── README.md # Project documentation
 
 ## **Installation & Setup**
 ### **1. Clone the Repository**
