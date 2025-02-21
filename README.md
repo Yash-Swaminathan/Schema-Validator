@@ -24,32 +24,36 @@ This project is a **FastAPI-based service** that validates YAML configuration fi
 
 ---
 
-## **Project Structure**
-
-'''Intern-Project-1/
-'''
-├── .vscode/ # VS Code configuration files
-│
-├── intern_project/ # Backend application code
-│ ├── database.py # PostgreSQL connection & table creation
-│ ├── main.py # FastAPI endpoints for validation and config management
-│ ├── Schema.py # JSON Schema definitions for validation
-│
-├── tests/ # Test cases for API
-│
-├── frontend/ # Frontend application code
-│ ├── App.jsx # React frontend with Formik
-│
-├── docker-compose.yml # Dockerized environment setup
-├── Dockerfile # Backend Docker setup
-│
-├── poetry.lock # Poetry dependency lockfile
-├── pyproject.toml # Poetry dependencies
-│
-└── README.md # Project documentation
 
 ## **Installation & Setup**
 ### **1. Clone the Repository**
 ```sh
 git clone https://github.com/yashswaminathan/Intern-Project-1.git
 cd Intern-Project-1
+```
+### **2. Install Dependencies**
+```sh
+poetry install
+or
+pip install -r requirements.txt
+```
+
+### **3. Running The Application**
+```sh
+docker-compose up --build
+```
+This will:
+
+Start the FastAPI application on http://localhost:8000
+Spin up a PostgreSQL database
+Expose APIs for validation and config management
+
+
+
+API Endpoints
+HTTP Method	Endpoint	Description
+POST	/validate	Validate a YAML file against schema
+POST	/configs/	Add a new configuration
+GET	/configs/{id}	Retrieve a config by ID
+PUT	/configs/{id}	Update a config
+DELETE	/configs/{id}	Delete a config
