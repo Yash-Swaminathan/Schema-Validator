@@ -50,8 +50,7 @@ Expose APIs for validation and config management
 
 
 
-API Endpoints
-HTTP Method	Endpoint	Description
+
 POST	/validate	Validate a YAML file against schema
 POST	/configs/	Add a new configuration
 GET	/configs/{id}	Retrieve a config by ID
