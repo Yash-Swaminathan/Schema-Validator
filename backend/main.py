@@ -3,13 +3,13 @@ from fastapi import FastAPI, HTTPException, Query, File, UploadFile, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Dict, Optional, List
-from intern_project.Schema import SCHEMA  # Import the SCHEMA from Schema.py
+from backend.Schema import SCHEMA  # Import the SCHEMA from Schema.py
 import uvicorn
 import yaml
 from jsonschema import validate, ValidationError, SchemaError
 import psycopg2
 import psycopg2.extras
-from intern_project.database import lifespan, conn  # Import the FastAPI instance and DB connection
+from backend.database import lifespan, conn  # Import the FastAPI instance and DB connection
 
 APP = FastAPI(lifespan=lifespan)
 
