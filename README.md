@@ -56,5 +56,4 @@ cd frontend
 npm install
 npm start
 ```
-Accessible at http://localhost:3000
-Built using Formik & Yup for form validation
+Accessible at http://localhost:3000 Built using Formik & Yup for form validation

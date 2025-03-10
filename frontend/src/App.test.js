@@ -18,7 +18,7 @@ describe('App Component', () => {
     // Find the name input field using its label.
     const nameInput = screen.getByLabelText(/Name \*/i);
 
-    // Enter a valid name.
+    // Enter a name.
     await userEvent.clear(nameInput);
     await userEvent.type(nameInput, 'John Doe');
     expect(nameInput).toHaveValue('John Doe');
