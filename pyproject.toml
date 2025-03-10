@@ -1,24 +1,23 @@
-[project]
-name = "intern_project"
+[tool.poetry]
+name = "intern-project"
 version = "0.1.0"
-description = "INTERN_PROJECT"
-authors = [
-    {name = "Yash-Swaminathan",email = "yashswaminathan1@gmail.com"}
-]
-license = {text = "MIT"}
+description = ""
+authors = ["Yash Swaminathan <yashswaminathan1@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "fastapi (>=0.115.8,<0.116.0)",
-    "uvicorn (>=0.34.0,<0.35.0)",
-    "psycopg2 (>=2.9.10,<3.0.0)",
-    "pydantic[email] (>=2.10.6,<3.0.0)",
-    "pyyaml (>=6.0.2,<7.0.0)",
-    "jsonschema (>=4.23.0,<5.0.0)",
-    "python-multipart (>=0.0.20,<0.0.21)",
-    "psycopg2-binary (>=2.9.10,<3.0.0)"
+packages = [
+    { include = "intern_project", from = "." }
 ]
 
+[tool.poetry.dependencies]
+python = ">=3.12"
+fastapi = ">=0.115.8,<0.116.0"
+uvicorn = ">=0.34.0,<0.35.0"
+psycopg2 = ">=2.9.10,<3.0.0"
+pydantic = {extras = ["email"], version = ">=2.10.6,<3.0.0"}
+pyyaml = ">=6.0.2,<7.0.0"
+jsonschema = ">=4.23.0,<5.0.0"
+python-multipart = ">=0.0.20,<0.0.21"
+psycopg2-binary = ">=2.9.10,<3.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

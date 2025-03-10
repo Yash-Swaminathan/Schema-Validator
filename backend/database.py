@@ -4,12 +4,13 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import os
 
-# PostgreSQL Database Configuration
-DB_NAME = os.getenv("POSTGRES_DB", "postgres")
-DB_USER = os.getenv("POSTGRES_USER", "Intern-Project")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "Yash214!")
-DB_HOST = os.getenv("DB_HOST", "host.docker.internal")  
+# PostgreSQL Database Configuration (uses Docker environment variables)
+DB_NAME = os.getenv("POSTGRES_DB", "postgres") 
+DB_USER = os.getenv("POSTGRES_USER", "postgres")  
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+DB_HOST = os.getenv("DB_HOST", "localhost")  
 DB_PORT = os.getenv("DB_PORT", "5432")
+
 
 # Establishing the Connection
 conn = psycopg2.connect(
@@ -47,5 +48,5 @@ async def lifespan(app: FastAPI):
     conn.close()
     print("Shutdown: Database connection closed.")
 
-# Initialize FastAPI App
+# Initialize FastAPI App 
 APP = FastAPI(lifespan=lifespan)

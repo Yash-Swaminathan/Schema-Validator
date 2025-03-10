@@ -1,16 +1,52 @@
 # Imports
-from fastapi import FastAPI, HTTPException, Query, File, UploadFile
-from pydantic import BaseModel, EmailStr, Field
+from fastapi import FastAPI, HTTPException, Query, File, UploadFile, Body
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Dict, Optional, List
-from Schema import SCHEMA  # Import the SCHEMA from Schema.py
+from intern_project.Schema import SCHEMA  # Import the SCHEMA from Schema.py
 import uvicorn
 import yaml
 from jsonschema import validate, ValidationError, SchemaError
 import psycopg2
 import psycopg2.extras
-from database import APP, conn  # Import the FastAPI instance and DB connection
+from intern_project.database import lifespan, conn  # Import the FastAPI instance and DB connection
 
+APP = FastAPI(lifespan=lifespan)
 
+APP.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development; restrict this in production
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+)
+
+# Pydantic model for configuration data
+class ConfigInput(BaseModel):
+    name: str
+    age: int = Field(..., ge=0, description="Age must be a non-negative integer")
+    email: EmailStr
+    is_active: Optional[bool] = None
+    hobbies: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    zip_code: Optional[str] = None
+
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, value):
+        # Only letters and spaces
+        if not value.replace(" ", "").isalpha():
+            raise ValueError("Name must contain only letters")
+        return value
+
+    @field_validator('city')
+    @classmethod
+    def validate_city(cls, value):
+        # Allow empty or None if city is optional
+        if value and not value.replace(" ", "").isalpha():
+            raise ValueError("City must contain only letters")
+        return value
 
 # Function to validate YAML content, will return the type of error
 def VALIDATE_YAML(yaml_content: str):
@@ -45,35 +81,27 @@ async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML 
 
 # Used to add a new configuration in the database
 @APP.post("/configs/")
-def ADD_CONFIG(
-    name: str = Query(..., description="Name"),
-    age: int = Query(..., ge=0, description="Age must be a non-negative integer"),
-    email: EmailStr = Query(..., description="Valid email address"),
-    is_active: Optional[bool] = Query(None, description="User active status"),
-    hobbies: Optional[str] = Query(None, description="List of hobbies"),
-    street: Optional[str] = Query(None, description="Street address"),
-    city: Optional[str] = Query(None, description="City name"),
-    zip_code: Optional[str] = Query(None, description="ZIP code"),
-):
+def ADD_CONFIG(config: ConfigInput):
     """
     Add a new configuration to the PostgreSQL database.
     """
     # Stored as a list
-    hobbies_list = hobbies.split(",") if hobbies else []
-
-# SQL query to insert data into the configs table
+    hobbies_list = config.hobbies.split(",") if config.hobbies else []
+    
+    # SQL query to insert data into the configs table
     insert_sql = """
         INSERT INTO configs (name, age, email, is_active, hobbies, street, city, zip_code)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id, name, age, email, is_active, hobbies, street, city, zip_code;
     """
-    values = (name, age, email, is_active, hobbies_list, street, city, zip_code)
+    values = (config.name, config.age, config.email, config.is_active, 
+              hobbies_list, config.street, config.city, config.zip_code)
 
-# Execute query and fetch new record
+    # Execute query and fetch new record
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(insert_sql, values)
         new_record = cur.fetchone()  
-
+    
     return new_record
     
 
@@ -83,7 +111,7 @@ def GET_CONFIG(ID: int):
     """
     Retrieve a configuration by its ID from the PostgreSQL database.
     """
-# SQL query to fetch the configuration details for the given ID
+    # SQL query to fetch the configuration details for the given ID
     select_sql = """
         SELECT id, name, age, email, is_active, hobbies, street, city, zip_code
         FROM configs
@@ -103,24 +131,14 @@ def GET_CONFIG(ID: int):
 
 # Updates the Configuration of an ID
 @APP.put("/configs/{ID}")
-def UPDATE_CONFIG(
-    ID: int,
-    name: str = Query(..., description="Name"),
-    age: int = Query(..., ge=0, description="Age must be a non-negative integer"),
-    email: EmailStr = Query(..., description="Valid email address"),
-    is_active: Optional[bool] = Query(None, description="User active status"),
-    hobbies: Optional[str] = Query(None, description="List of hobbies (comma-separated)"),
-    street: Optional[str] = Query(None, description="Street address"),
-    city: Optional[str] = Query(None, description="City name"),
-    zip_code: Optional[str] = Query(None, description="ZIP code"),
-):
+def UPDATE_CONFIG(ID: int, config: ConfigInput):
     """
     Update an existing configuration by ID in the PostgreSQL database.
     """
     # Convert hobbies string to a list if provided
-    hobbies_list = hobbies.split(",") if hobbies else []
+    hobbies_list = config.hobbies.split(",") if config.hobbies else []
 
- # SQL query to update the configuration details for the given ID
+    # SQL query to update the configuration details for the given ID
     update_sql = """
         UPDATE configs
         SET
@@ -136,14 +154,15 @@ def UPDATE_CONFIG(
         WHERE id = %s
         RETURNING id, name, age, email, is_active, hobbies, street, city, zip_code;
     """
-    values = (name, age, email, is_active, hobbies_list, street, city, zip_code, ID)
+    values = (config.name, config.age, config.email, config.is_active, 
+              hobbies_list, config.street, config.city, config.zip_code, ID)
 
- # Execute the SQL query and fetch the updated record
+    # Execute the SQL query and fetch the updated record
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(update_sql, values)
         updated_record = cur.fetchone()
 
-  # If no record is updated, raise a 404 error
+    # If no record is updated, raise a 404 error
     if not updated_record:
         raise HTTPException(status_code=404, detail="Config not found")
 
@@ -159,22 +178,13 @@ def DELETE_CONFIG(ID: int):
     # SQL query to delete the configuration and return the deleted ID
     delete_sql = "DELETE FROM configs WHERE id = %s RETURNING id;"
 
-     # Execute the SQL query and check if a record was deleted
+    # Execute the SQL query and check if a record was deleted
     with conn.cursor() as cur:
         cur.execute(delete_sql, (ID,))
         deleted = cur.fetchone()
 
-  # If no record is deleted, raise a 404 error
+    # If no record is deleted, raise a 404 error
     if not deleted:
         raise HTTPException(status_code=404, detail="Config not found")
     
     return {"message": f"Config with ID {ID} has been deleted."}
-
-
-
-# This executes the code and creates a localhost webpage
-def MAIN():
-    uvicorn.run(APP, host="127.0.0.1", port=9000)
-
-if __name__ == "__main__":
-    MAIN()

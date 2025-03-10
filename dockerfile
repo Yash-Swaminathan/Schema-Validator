@@ -1,28 +1,26 @@
-FROM python:3.12-slim
+# Use Python 3.12 slim image
+FROM python:3.12-slim AS build
 
 WORKDIR /app
 
-# Install system dependencies, including build-essential and libpq-dev
-RUN apt-get update && \
-    apt-get install -y curl gcc libpq-dev && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl gcc libpq-dev && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry using the official installer
-RUN curl -sSL https://install.python-poetry.org | python -
+RUN python3 -m pip install poetry
 
-# Add Poetry to PATH (Poetry installs to /root/.local/bin by default)
-ENV PATH="/root/.local/bin:${PATH}"
+# Copy project files
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-root
 
-# Copy only the configuration files first
-COPY pyproject.toml poetry.lock* ./
+# Copy the actual project source code
+COPY intern_project /app/intern_project
 
-# Install dependencies without installing the root project (--no-root)
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-root --only main --no-interaction --no-ansi -vvv
+# Set PYTHONPATH to include /app
+ENV PYTHONPATH="/app:${PYTHONPATH}"
 
-# Copy the rest of your application code
-COPY . .
+# Set environment variables for Poetry virtual environment
+ENV PATH="/app/.venv/bin:$PATH"
 
-EXPOSE 9000
+EXPOSE 8000
 
-CMD ["uvicorn", "main:APP", "--host", "0.0.0.0", "--port", "9000"]
+# Run the application from the correct path
+CMD ["poetry", "run", "uvicorn", "intern_project.main:APP", "--host", "0.0.0.0", "--port", "8000"]

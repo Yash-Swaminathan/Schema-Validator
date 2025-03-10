@@ -1,0 +1,7 @@
+name: MyApp
+version: 2.1.0
+settings:
+  debug: true
+  max_connections: 50
+
+
