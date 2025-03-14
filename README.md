@@ -57,5 +57,3 @@ npm install
 npm start
 ```
 Accessible at http://localhost:3000 Built using Formik & Yup for form validation
-
-![System Diagram](<Screenshot 2025-03-13 131225-1.png>)
