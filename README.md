@@ -23,7 +23,8 @@ This project is a **FastAPI-based service** that validates YAML configuration fi
 | Frontend    | React.js, Formik, Yup |
 
 ---
-
+## **System Architecture**
+![Alt text](System_Diagram.png)
 
 ## **Installation & Setup**
 ### **1. Clone The Repository**
