@@ -188,3 +188,8 @@ def DELETE_CONFIG(ID: int):
         raise HTTPException(status_code=404, detail="Config not found")
     
     return {"message": f"Config with ID {ID} has been deleted."}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("backend.main:APP", host="0.0.0.0", port=8000, reload=True)
