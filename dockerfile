@@ -12,7 +12,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root
 
 # Copy the actual project source code
-COPY intern_project /app/intern_project
+COPY backend /app/backend
 
 # Set PYTHONPATH to include /app
 ENV PYTHONPATH="/app:${PYTHONPATH}"
