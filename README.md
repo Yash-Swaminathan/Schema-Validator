@@ -29,8 +29,7 @@ This project is a **FastAPI-based service** that validates YAML configuration fi
 ## **Installation & Setup**
 ### **1. Clone The Repository**
 ```sh
-git clone https://github.com/yashswaminathan/Intern-Project-1.git
-cd Intern-Project-1
+git clone https://github.com/Yash-Swaminathan/Schema-Validator.git
 ```
 ### **2. Install Dependencies**
 ```sh
