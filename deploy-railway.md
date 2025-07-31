@@ -18,7 +18,7 @@
 
 2. **Configure Environment**:
    - Railway will automatically detect the Python project
-   - It will use the `Dockerfile` for deployment
+   - It will use the `nixpacks.toml` for deployment (no Docker required)
 
 3. **Add PostgreSQL Database**:
    - In your Railway project dashboard
@@ -63,7 +63,7 @@
 
 The following files are configured for Railway deployment:
 
-- `Dockerfile`: Container configuration
+- `nixpacks.toml`: Build configuration (no Docker required)
 - `railway.toml`: Railway-specific configuration
 - `Procfile`: Alternative deployment method
 - `requirements.txt`: Python dependencies
