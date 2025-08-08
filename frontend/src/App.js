@@ -11,8 +11,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [yamlValidationResult, setYamlValidationResult] = useState(null);
 
-  // Base URL for API
-  const API_BASE_URL = 'http://localhost:8000';
+  // Base URL for API - use deployed backend URL or fallback to localhost for development
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://schema-validator.onrender.com/';
 
   // Form validation schema using Yup
   const ConfigSchema = Yup.object().shape({
