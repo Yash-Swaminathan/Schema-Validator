@@ -7,6 +7,6 @@ services:
     startCommand: npm run serve
     envVars:
       - key: NODE_VERSION
-        value: 18.0.0
+        value: 20.0.0
       - key: REACT_APP_API_URL
-        value: https://schema-validator.onrender.com/ 
+        value: https://schema-validator.onrender.com 
