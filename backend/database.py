@@ -17,15 +17,16 @@ if DATABASE_URL:
     # Parse the DATABASE_URL for Render
     import urllib.parse
     parsed = urllib.parse.urlparse(DATABASE_URL)
-    DB_NAME = parsed.path[1:]
-    DB_USER = parsed.username
-    DB_PASSWORD = parsed.password
-    DB_HOST = parsed.hostname
+    DB_NAME = parsed.path[1:] if parsed.path else "postgres"
+    DB_USER = parsed.username or "postgres"
+    DB_PASSWORD = parsed.password or "postgres"
+    DB_HOST = parsed.hostname or "localhost"
     DB_PORT = parsed.port or "5432"
 
 # Establishing the Connection
 def get_connection():
     try:
+        print(f"Attempting to connect to database: {DB_HOST}:{DB_PORT}/{DB_NAME}")
         conn = psycopg2.connect(
             dbname=DB_NAME,
             user=DB_USER,
@@ -34,17 +35,15 @@ def get_connection():
             port=DB_PORT
         )
         conn.autocommit = True
+        print("Database connection successful")
         return conn
     except Exception as e:
         print(f"Database connection failed: {e}")
         return None
 
-conn = get_connection()
-
 # FastAPI Lifespan to handle startup/shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global conn
     # Try to establish connection
     conn = get_connection()
     if conn:
@@ -69,14 +68,11 @@ async def lifespan(app: FastAPI):
             print("Startup: Table created or already exists.")
         except Exception as e:
             print(f"Error creating table: {e}")
+        finally:
+            conn.close()
     else:
         print("Warning: Could not establish database connection during startup")
     
     yield  # Yield control to application
     
-    if conn:
-        conn.close()
-        print("Shutdown: Database connection closed.")
-
-# Initialize FastAPI App 
-APP = FastAPI(lifespan=lifespan)
+    print("Shutdown: Database connection closed.")

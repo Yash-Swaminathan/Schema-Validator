@@ -11,9 +11,9 @@ import psycopg2
 import psycopg2.extras
 from backend.database import lifespan, get_connection  # Import the FastAPI instance and DB connection
 
-APP = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
-APP.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # For development; restrict this in production
     allow_credentials=True,
@@ -22,7 +22,7 @@ APP.add_middleware(
 )
 
 # Health check endpoint
-@APP.get("/")
+@app.get("/")
 async def root():
     """
     Health check endpoint for Render deployment.
@@ -30,7 +30,7 @@ async def root():
     return {"message": "Schema Validator API is running!", "status": "healthy"}
 
 # Health check endpoint
-@APP.get("/health")
+@app.get("/health")
 async def health_check():
     """
     Health check endpoint for monitoring.
@@ -89,7 +89,7 @@ def VALIDATE_YAML(yaml_content: str):
 
 
 # Compares the given YAML file to the SCHEMA, validating the file
-@APP.post("/validate", summary="Validate a YAML file against the defined schema")
+@app.post("/validate", summary="Validate a YAML file against the defined schema")
 async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML file to be validated")):
     """
     Compares the uploaded YAML file against a predefined schema.
@@ -104,7 +104,7 @@ async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML 
 
 
 # Used to add a new configuration in the database
-@APP.post("/configs/")
+@app.post("/configs/")
 def ADD_CONFIG(config: ConfigInput):
     """
     Add a new configuration to the PostgreSQL database.
@@ -138,7 +138,7 @@ def ADD_CONFIG(config: ConfigInput):
     
 
 # Retrieve Configuration based on the ID
-@APP.get("/configs/{ID}")
+@app.get("/configs/{ID}")
 def GET_CONFIG(ID: int):
     """
     Retrieve a configuration by its ID from the PostgreSQL database.
@@ -173,7 +173,7 @@ def GET_CONFIG(ID: int):
 
 
 # Updates the Configuration of an ID
-@APP.put("/configs/{ID}")
+@app.put("/configs/{ID}")
 def UPDATE_CONFIG(ID: int, config: ConfigInput):
     """
     Update an existing configuration by ID in the PostgreSQL database.
@@ -224,7 +224,7 @@ def UPDATE_CONFIG(ID: int, config: ConfigInput):
    
 
 # Deletes the configuration based on its ID
-@APP.delete("/configs/{ID}")
+@app.delete("/configs/{ID}")
 def DELETE_CONFIG(ID: int):
     """
     Delete a configuration by its ID from the PostgreSQL database.
@@ -253,3 +253,7 @@ def DELETE_CONFIG(ID: int):
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     finally:
         conn.close()
+
+# For local development
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
