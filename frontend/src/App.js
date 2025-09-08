@@ -10,9 +10,14 @@ function App() {
   const [configDetails, setConfigDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [yamlValidationResult, setYamlValidationResult] = useState(null);
+  const [comparisonResult, setComparisonResult] = useState(null);
+  const [schema1Content, setSchema1Content] = useState('');
+  const [schema2Content, setSchema2Content] = useState('');
+  const [schema1Name, setSchema1Name] = useState('');
+  const [schema2Name, setSchema2Name] = useState('');
 
   // Base URL for API - use deployed backend URL or fallback to localhost for development
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://schema-validator.onrender.com';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
   // Form validation schema using Yup
   const ConfigSchema = Yup.object().shape({
@@ -196,6 +201,71 @@ function App() {
     }
   };
 
+  // Handle schema comparison with text input
+  const handleSchemaComparison = async () => {
+    if (!schema1Content.trim() || !schema2Content.trim()) {
+      setMessage({ type: 'error', text: 'Please provide both schema contents' });
+      return;
+    }
+
+    setIsLoading(true);
+    setComparisonResult(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/compare-schemas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          schema1_content: schema1Content,
+          schema2_content: schema2Content,
+          schema1_name: schema1Name || 'Schema 1',
+          schema2_name: schema2Name || 'Schema 2'
+        })
+      });
+
+      const result = await response.json();
+      setComparisonResult(result);
+    } catch (error) {
+      setMessage({ type: 'error', text: `Error comparing schemas: ${error.message}` });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle schema comparison with file upload
+  const handleSchemaFileComparison = async (event) => {
+    const files = event.target.files;
+    if (files.length !== 2) {
+      setMessage({ type: 'error', text: 'Please select exactly 2 files' });
+      return;
+    }
+
+    setIsLoading(true);
+    setComparisonResult(null);
+    setMessage(null);
+
+    const formData = new FormData();
+    formData.append('file1', files[0]);
+    formData.append('file2', files[1]);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/compare-schema-files`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      setComparisonResult(result);
+    } catch (error) {
+      setMessage({ type: 'error', text: `Error comparing schema files: ${error.message}` });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Format hobbies for display
   const formatHobbies = (hobbies) => {
     if (!hobbies || !Array.isArray(hobbies)) return '';
@@ -205,7 +275,8 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <h1>Configuration Management System</h1>
+        <h1>Schema Validator & Configuration Manager</h1>
+        <p className="subtitle">Validate, Compare & Manage YAML Schemas</p>
       </header>
 
       <div className="tabs">
@@ -219,13 +290,25 @@ function App() {
           className={activeTab === 'view' ? 'active' : ''} 
           onClick={() => setActiveTab('view')}
         >
-          View/Update/Delete
+          Manage Configs
         </button>
         <button 
           className={activeTab === 'validate' ? 'active' : ''} 
           onClick={() => setActiveTab('validate')}
         >
           Validate YAML
+        </button>
+        <button 
+          className={activeTab === 'compare-text' ? 'active' : ''} 
+          onClick={() => setActiveTab('compare-text')}
+        >
+          Compare Schemas
+        </button>
+        <button 
+          className={activeTab === 'compare-files' ? 'active' : ''} 
+          onClick={() => setActiveTab('compare-files')}
+        >
+          Compare Files
         </button>
       </div>
 
@@ -421,6 +504,199 @@ function App() {
               <p>{yamlValidationResult.is_valid ? yamlValidationResult.message : yamlValidationResult.error}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'compare-text' && (
+        <div className="form-section">
+          <h2>Compare YAML Schemas</h2>
+          <p className="description">Compare two YAML schemas to identify differences</p>
+          
+          <div className="schema-comparison">
+            <div className="schema-input-group">
+              <div className="schema-input">
+                <label htmlFor="schema1-name">Schema 1 Name (Optional)</label>
+                <input
+                  type="text"
+                  id="schema1-name"
+                  placeholder="e.g., Development Schema"
+                  value={schema1Name}
+                  onChange={(e) => setSchema1Name(e.target.value)}
+                />
+                
+                <label htmlFor="schema1-content">Schema 1 Content *</label>
+                <textarea
+                  id="schema1-content"
+                  placeholder="Paste your first YAML schema here..."
+                  value={schema1Content}
+                  onChange={(e) => setSchema1Content(e.target.value)}
+                  rows="10"
+                />
+              </div>
+              
+              <div className="schema-input">
+                <label htmlFor="schema2-name">Schema 2 Name (Optional)</label>
+                <input
+                  type="text"
+                  id="schema2-name"
+                  placeholder="e.g., Production Schema"
+                  value={schema2Name}
+                  onChange={(e) => setSchema2Name(e.target.value)}
+                />
+                
+                <label htmlFor="schema2-content">Schema 2 Content *</label>
+                <textarea
+                  id="schema2-content"
+                  placeholder="Paste your second YAML schema here..."
+                  value={schema2Content}
+                  onChange={(e) => setSchema2Content(e.target.value)}
+                  rows="10"
+                />
+              </div>
+            </div>
+            
+            <div className="comparison-actions">
+              <button onClick={handleSchemaComparison} disabled={isLoading}>
+                Compare Schemas
+              </button>
+              <button 
+                type="button" 
+                className="clear-button"
+                onClick={() => {
+                  setSchema1Content('');
+                  setSchema2Content('');
+                  setSchema1Name('');
+                  setSchema2Name('');
+                  setComparisonResult(null);
+                  setMessage(null);
+                }}
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          {comparisonResult && (
+            <div className="comparison-result">
+              <h3>Comparison Result</h3>
+              <div className={`result-summary ${comparisonResult.are_identical ? 'identical' : 'different'}`}>
+                <div className="result-header">
+                  <span className="schema-names">
+                    {comparisonResult.schema1_name} vs {comparisonResult.schema2_name}
+                  </span>
+                  <span className={`result-badge ${comparisonResult.are_identical ? 'identical' : 'different'}`}>
+                    {comparisonResult.are_identical ? '✓ Identical' : '⚠ Different'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="validation-status">
+                <div className={`schema-status ${comparisonResult.schema1_valid ? 'valid' : 'invalid'}`}>
+                  <strong>{comparisonResult.schema1_name}:</strong> 
+                  {comparisonResult.schema1_valid ? ' Valid YAML' : ' Invalid YAML'}
+                  {comparisonResult.schema1_errors && (
+                    <ul className="error-list">
+                      {comparisonResult.schema1_errors.map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className={`schema-status ${comparisonResult.schema2_valid ? 'valid' : 'invalid'}`}>
+                  <strong>{comparisonResult.schema2_name}:</strong> 
+                  {comparisonResult.schema2_valid ? ' Valid YAML' : ' Invalid YAML'}
+                  {comparisonResult.schema2_errors && (
+                    <ul className="error-list">
+                      {comparisonResult.schema2_errors.map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              {!comparisonResult.are_identical && comparisonResult.differences && (
+                <div className="differences-section">
+                  <h4>Differences Found:</h4>
+                  <pre className="differences-display">
+                    {JSON.stringify(comparisonResult.differences, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'compare-files' && (
+        <div className="form-section">
+          <h2>Compare YAML Schema Files</h2>
+          <p className="description">Upload two YAML files to compare their schemas</p>
+          
+          <div className="file-comparison">
+            <div className="file-upload-comparison">
+              <label htmlFor="schema-files">Select Two YAML Files to Compare</label>
+              <input 
+                type="file" 
+                id="schema-files"
+                accept=".yaml,.yml" 
+                multiple
+                onChange={handleSchemaFileComparison}
+                disabled={isLoading}
+              />
+              <p className="note">Select exactly 2 YAML files for comparison</p>
+            </div>
+
+            {comparisonResult && (
+              <div className="comparison-result">
+                <h3>File Comparison Result</h3>
+                <div className={`result-summary ${comparisonResult.are_identical ? 'identical' : 'different'}`}>
+                  <div className="result-header">
+                    <span className="schema-names">
+                      {comparisonResult.schema1_name} vs {comparisonResult.schema2_name}
+                    </span>
+                    <span className={`result-badge ${comparisonResult.are_identical ? 'identical' : 'different'}`}>
+                      {comparisonResult.are_identical ? '✓ Identical' : '⚠ Different'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="validation-status">
+                  <div className={`schema-status ${comparisonResult.schema1_valid ? 'valid' : 'invalid'}`}>
+                    <strong>{comparisonResult.schema1_name}:</strong> 
+                    {comparisonResult.schema1_valid ? ' Valid YAML' : ' Invalid YAML'}
+                    {comparisonResult.schema1_errors && (
+                      <ul className="error-list">
+                        {comparisonResult.schema1_errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className={`schema-status ${comparisonResult.schema2_valid ? 'valid' : 'invalid'}`}>
+                    <strong>{comparisonResult.schema2_name}:</strong> 
+                    {comparisonResult.schema2_valid ? ' Valid YAML' : ' Invalid YAML'}
+                    {comparisonResult.schema2_errors && (
+                      <ul className="error-list">
+                        {comparisonResult.schema2_errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
+                {!comparisonResult.are_identical && comparisonResult.differences && (
+                  <div className="differences-section">
+                    <h4>Differences Found:</h4>
+                    <pre className="differences-display">
+                      {JSON.stringify(comparisonResult.differences, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
