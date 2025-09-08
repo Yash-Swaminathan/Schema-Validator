@@ -9,17 +9,41 @@ import yaml
 from jsonschema import validate, ValidationError, SchemaError
 import psycopg2
 import psycopg2.extras
-from backend.database import lifespan, conn  # Import the FastAPI instance and DB connection
+from backend.database import lifespan, get_connection  # Import the FastAPI instance and DB connection
 
-APP = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
-APP.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # For development; restrict this in production
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+# Health check endpoint
+@app.get("/")
+async def root():
+    """
+    Health check endpoint for Render deployment.
+    """
+    return {"message": "Schema Validator API is running!", "status": "healthy"}
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """
+    Health check endpoint for monitoring.
+    """
+    try:
+        conn = get_connection()
+        if conn:
+            conn.close()
+            return {"status": "healthy", "database": "connected"}
+        else:
+            return {"status": "unhealthy", "database": "disconnected"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
 
 # Pydantic model for configuration data
 class ConfigInput(BaseModel):
@@ -65,7 +89,7 @@ def VALIDATE_YAML(yaml_content: str):
 
 
 # Compares the given YAML file to the SCHEMA, validating the file
-@APP.post("/validate", summary="Validate a YAML file against the defined schema")
+@app.post("/validate", summary="Validate a YAML file against the defined schema")
 async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML file to be validated")):
     """
     Compares the uploaded YAML file against a predefined schema.
@@ -80,11 +104,15 @@ async def VALIDATE_YAML_ENDPOINT(file: UploadFile = File(..., description="YAML 
 
 
 # Used to add a new configuration in the database
-@APP.post("/configs/")
+@app.post("/configs/")
 def ADD_CONFIG(config: ConfigInput):
     """
     Add a new configuration to the PostgreSQL database.
     """
+    conn = get_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
     # Stored as a list
     hobbies_list = config.hobbies.split(",") if config.hobbies else []
     
@@ -98,19 +126,27 @@ def ADD_CONFIG(config: ConfigInput):
               hobbies_list, config.street, config.city, config.zip_code)
 
     # Execute query and fetch new record
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        cur.execute(insert_sql, values)
-        new_record = cur.fetchone()  
-    
-    return new_record
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(insert_sql, values)
+            new_record = cur.fetchone()  
+        return new_record
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
     
 
 # Retrieve Configuration based on the ID
-@APP.get("/configs/{ID}")
+@app.get("/configs/{ID}")
 def GET_CONFIG(ID: int):
     """
     Retrieve a configuration by its ID from the PostgreSQL database.
     """
+    conn = get_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
     # SQL query to fetch the configuration details for the given ID
     select_sql = """
         SELECT id, name, age, email, is_active, hobbies, street, city, zip_code
@@ -118,23 +154,34 @@ def GET_CONFIG(ID: int):
         WHERE id = %s;
     """
     # Execute the SQL query and fetch the record
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        cur.execute(select_sql, (ID,))
-        record = cur.fetchone()
-    
-    # If no record is found, raise a 404 error
-    if not record:
-        raise HTTPException(status_code=404, detail="Config not found")
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(select_sql, (ID,))
+            record = cur.fetchone()
+        
+        # If no record is found, raise a 404 error
+        if not record:
+            raise HTTPException(status_code=404, detail="Config not found")
 
-    return record
+        return record
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
 
 
 # Updates the Configuration of an ID
-@APP.put("/configs/{ID}")
+@app.put("/configs/{ID}")
 def UPDATE_CONFIG(ID: int, config: ConfigInput):
     """
     Update an existing configuration by ID in the PostgreSQL database.
     """
+    conn = get_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
     # Convert hobbies string to a list if provided
     hobbies_list = config.hobbies.split(",") if config.hobbies else []
 
@@ -158,33 +205,55 @@ def UPDATE_CONFIG(ID: int, config: ConfigInput):
               hobbies_list, config.street, config.city, config.zip_code, ID)
 
     # Execute the SQL query and fetch the updated record
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        cur.execute(update_sql, values)
-        updated_record = cur.fetchone()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(update_sql, values)
+            updated_record = cur.fetchone()
 
-    # If no record is updated, raise a 404 error
-    if not updated_record:
-        raise HTTPException(status_code=404, detail="Config not found")
+        # If no record is updated, raise a 404 error
+        if not updated_record:
+            raise HTTPException(status_code=404, detail="Config not found")
 
-    return updated_record
+        return updated_record
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
    
 
 # Deletes the configuration based on its ID
-@APP.delete("/configs/{ID}")
+@app.delete("/configs/{ID}")
 def DELETE_CONFIG(ID: int):
     """
     Delete a configuration by its ID from the PostgreSQL database.
     """
+    conn = get_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
     # SQL query to delete the configuration and return the deleted ID
     delete_sql = "DELETE FROM configs WHERE id = %s RETURNING id;"
 
     # Execute the SQL query and check if a record was deleted
-    with conn.cursor() as cur:
-        cur.execute(delete_sql, (ID,))
-        deleted = cur.fetchone()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(delete_sql, (ID,))
+            deleted = cur.fetchone()
 
-    # If no record is deleted, raise a 404 error
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Config not found")
-    
-    return {"message": f"Config with ID {ID} has been deleted."}
+        # If no record is deleted, raise a 404 error
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Config not found")
+        
+        return {"message": f"Config with ID {ID} has been deleted."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+# For local development
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: schema-validator-frontend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run serve
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: REACT_APP_API_URL
+        value: https://schema-validator.onrender.com 
