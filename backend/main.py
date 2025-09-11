@@ -1,6 +1,4 @@
-# Imports
 from fastapi import FastAPI
-# Force new deployment, HTTPException, Query, File, UploadFile, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Dict, Optional, List, Any
