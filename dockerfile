@@ -1,26 +1,29 @@
 # Use Python 3.12 slim image
-FROM python:3.12-slim AS build
+FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install poetry
-
-# Copy project files
+# Copy requirements and install Python dependencies
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-root
+RUN pip install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-root --no-dev
 
-# Copy the actual project source code
-COPY backend /app/backend
+# Copy the application code
+COPY backend ./backend
 
-# Set PYTHONPATH to include /app
+# Set PYTHONPATH
 ENV PYTHONPATH="/app:${PYTHONPATH}"
 
-# Set environment variables for Poetry virtual environment
-ENV PATH="/app/.venv/bin:$PATH"
-
+# Expose port
 EXPOSE 8000
 
-
-CMD ["sh", "-c", "poetry run uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run the application
+CMD uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}
