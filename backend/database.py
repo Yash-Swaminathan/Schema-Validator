@@ -13,7 +13,7 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 
 # For Render, we need to handle the database URL if provided
 DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL:
+if DATABASE_URL and not DB_HOST.startswith("/cloudsql/"):
     # Parse the DATABASE_URL for Render
     import urllib.parse
     parsed = urllib.parse.urlparse(DATABASE_URL)
