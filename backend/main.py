@@ -15,6 +15,15 @@ from backend.database import lifespan, get_connection  # Import the FastAPI inst
 
 app = FastAPI(lifespan=lifespan)
 
+# Health check endpoint
+@app.get("/")
+def root():
+    return {"message": "Schema Validator API is running!", "status": "healthy"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "schema-validator"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # For development; restrict this in production

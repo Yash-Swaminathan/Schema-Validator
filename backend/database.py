@@ -32,7 +32,8 @@ def get_connection():
             user=DB_USER,
             password=DB_PASSWORD,
             host=DB_HOST,
-            port=DB_PORT
+            port=DB_PORT,
+            connect_timeout=5  # 5 second timeout
         )
         conn.autocommit = True
         print("Database connection successful")
@@ -44,35 +45,40 @@ def get_connection():
 # FastAPI Lifespan to handle startup/shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Try to establish connection
-    conn = get_connection()
-    if conn:
-        create_table_sql = """
-        CREATE TABLE IF NOT EXISTS configs (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            age INT NOT NULL,
-            email VARCHAR(100) NOT NULL,
-            is_active BOOLEAN,
-            hobbies TEXT[],
-            street VARCHAR(100),
-            city VARCHAR(100),
-            zip_code VARCHAR(20),
-            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-        );
-        """
-        try:
-            with conn.cursor() as cur:
-                cur.execute(create_table_sql)
-            print("Startup: Table created or already exists.")
-        except Exception as e:
-            print(f"Error creating table: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Warning: Could not establish database connection during startup")
+    # Try to establish connection with timeout and non-blocking approach
+    print("Starting FastAPI application...")
+    try:
+        conn = get_connection()
+        if conn:
+            create_table_sql = """
+            CREATE TABLE IF NOT EXISTS configs (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                age INT NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                is_active BOOLEAN,
+                hobbies TEXT[],
+                street VARCHAR(100),
+                city VARCHAR(100),
+                zip_code VARCHAR(20),
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            );
+            """
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(create_table_sql)
+                print("Startup: Table created or already exists.")
+            except Exception as e:
+                print(f"Error creating table: {e}")
+            finally:
+                conn.close()
+        else:
+            print("Warning: Could not establish database connection during startup - continuing anyway")
+    except Exception as e:
+        print(f"Database initialization failed: {e} - continuing without database")
     
+    print("FastAPI application started successfully!")
     yield  # Yield control to application
     
-    print("Shutdown: Database connection closed.")
+    print("Shutdown: FastAPI application closing")
