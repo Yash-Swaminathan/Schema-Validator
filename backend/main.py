@@ -5,6 +5,7 @@ from typing import Dict, Optional, List, Any
 from backend.Schema import SCHEMA  # Import the SCHEMA from Schema.py
 import uvicorn
 import yaml
+import os
 from jsonschema import validate, ValidationError, SchemaError
 import json
 from deepdiff import DeepDiff
@@ -394,4 +395,5 @@ def DELETE_CONFIG(ID: int):
 
 # For local development
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))  # Use PORT env var or default to 8000
+    uvicorn.run(app, host="0.0.0.0", port=port)
