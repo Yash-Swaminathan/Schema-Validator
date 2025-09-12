@@ -26,7 +26,11 @@ def health_check():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development; restrict this in production
+    allow_origins=[
+        "http://localhost:3000",  # Local development
+        "https://*.vercel.app",   # Vercel deployments
+        "*"  # Allow all origins for now - restrict in production
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
@@ -36,7 +40,7 @@ app.add_middleware(
 @app.get("/")
 async def root():
     """
-    Health check endpoint for Render deployment.
+    Health check endpoint for Google Cloud Run deployment.
     """
     return {"message": "Schema Validator API is running!", "status": "healthy"}
 
