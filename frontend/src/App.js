@@ -17,7 +17,7 @@ function App() {
   const [schema2Name, setSchema2Name] = useState('');
 
   // Base URL for API - use deployed backend URL or fallback to localhost for development
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://schema-validator-131079022184.northamerica-northeast2.run.app';
 
   // Form validation schema using Yup
   const ConfigSchema = Yup.object().shape({
