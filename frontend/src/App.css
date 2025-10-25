@@ -29,6 +29,7 @@ header {
   margin: 0 auto;
   padding: 32px 24px;
   text-align: center;
+  position: relative;
 }
 
 header h1 {
@@ -44,6 +45,26 @@ header h1 {
   color: #9CA3AF;
   max-width: 600px;
   margin: 0 auto;
+}
+
+.github-link {
+  position: absolute;
+  top: 32px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  color: #E5E7EB;
+  transition: color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
+}
+
+.github-link:hover {
+  color: #6366F1;
+  transform: scale(1.1);
+}
+
+.github-link svg {
+  fill: currentColor;
 }
 
 /* Navigation */
