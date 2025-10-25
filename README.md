@@ -1,8 +1,9 @@
 # Configuration File Management & Validation System
+https://schema-validator-lilac.vercel.app/
 
 ## 🚀 **Live Demo**
-**Frontend**: Deployed on **Vercel**
-**Backend**: Deployed on **Google Cloud Run** 
+- **Frontend**: Deployed on **Vercel**
+- **Backend**: Deployed on **Google Cloud Run** 
 
 ## **Overview**
 This project is a **FastAPI-based service** that validates YAML configuration files against predefined schemas, stores configurations in a **PostgreSQL database**, and provides a **REST API interface**. The backend is containerized with **Docker**, dependencies are managed using **Poetry**, and the frontend is built with **React.js**.
