@@ -6,10 +6,10 @@
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   line-height: 1.6;
-  color: #E5E7EB;
-  background-color: #0f1115;
+  color: #f7f7f4;
+  background-color: #14120b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,8 +20,8 @@ body {
 
 /* Header */
 header {
-  border-bottom: 1px solid #20232a;
-  background-color: #0f1115;
+  border-bottom: 1px solid #2a271f;
+  background-color: #14120b;
 }
 
 .header-content {
@@ -35,14 +35,14 @@ header {
 header h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #E5E7EB;
+  color: #f7f7f4;
   letter-spacing: -0.025em;
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 16px;
-  color: #9CA3AF;
+  color: #9d9a92;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -53,13 +53,13 @@ header h1 {
   right: 24px;
   display: flex;
   align-items: center;
-  color: #E5E7EB;
+  color: #f7f7f4;
   transition: color 0.2s ease, transform 0.2s ease;
   text-decoration: none;
 }
 
 .github-link:hover {
-  color: #6366F1;
+  color: #d4d2cc;
   transform: scale(1.1);
 }
 
@@ -71,8 +71,8 @@ header h1 {
 .nav-tabs {
   display: flex;
   gap: 24px;
-  border-bottom: 1px solid #20232a;
-  background-color: #0f1115;
+  border-bottom: 1px solid #2a271f;
+  background-color: #14120b;
 }
 
 .nav-tabs-content {
@@ -86,10 +86,11 @@ header h1 {
 .nav-tabs button {
   background: none;
   border: none;
+  border-radius: 0;
   padding: 12px 0;
   font-size: 14px;
   font-weight: 500;
-  color: #9CA3AF;
+  color: #9d9a92;
   cursor: pointer;
   transition: color 0.2s ease;
   border-bottom: 2px solid transparent;
@@ -97,12 +98,12 @@ header h1 {
 }
 
 .nav-tabs button:hover {
-  color: #E5E7EB;
+  color: #f7f7f4;
 }
 
 .nav-tabs button.active {
-  color: #E5E7EB;
-  border-bottom-color: #6366F1;
+  color: #f7f7f4;
+  border-bottom-color: #f7f7f4;
 }
 
 /* Main Content */
@@ -118,8 +119,8 @@ main {
 
 /* Cards */
 .card {
-  background-color: #16181d;
-  border: 1px solid #20232a;
+  background-color: #1c1a13;
+  border: 1px solid #2a271f;
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -128,27 +129,27 @@ main {
 .card h2 {
   font-size: 18px;
   font-weight: 600;
-  color: #E5E7EB;
+  color: #f7f7f4;
   margin-bottom: 4px;
 }
 
 .card .description {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #9d9a92;
   margin-bottom: 24px;
 }
 
 .card h3 {
   font-size: 16px;
   font-weight: 500;
-  color: #E5E7EB;
+  color: #f7f7f4;
   margin: 24px 0 16px 0;
 }
 
 .card h4 {
   font-size: 14px;
   font-weight: 500;
-  color: #E5E7EB;
+  color: #f7f7f4;
   margin: 16px 0 12px 0;
 }
 
@@ -162,7 +163,7 @@ main {
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #E5E7EB;
+  color: #f7f7f4;
 }
 
 .form-group input[type="text"],
@@ -172,23 +173,22 @@ main {
   width: 100%;
   border-radius: 6px;
   background-color: transparent;
-  border: 1px solid #20232a;
+  border: 1px solid #2a271f;
   padding: 8px 12px;
   font-size: 14px;
-  color: #E5E7EB;
+  color: #f7f7f4;
   transition: border-color 0.2s ease;
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: #9CA3AF;
+  color: #9d9a92;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #6366F1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: #3d3930;
 }
 
 .form-group textarea {
@@ -213,13 +213,13 @@ main {
 .form-group.checkbox input {
   margin-right: 8px;
   width: auto;
-  accent-color: #6366F1;
+  accent-color: #3d3930;
 }
 
 .help-text {
   margin-top: 4px;
   font-size: 12px;
-  color: #9CA3AF;
+  color: #9d9a92;
 }
 
 /* Error Messages */
@@ -247,31 +247,32 @@ main {
 
 .btn:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+  box-shadow: none;
 }
 
 .btn-primary {
-  background-color: #5458E8;
-  color: white;
+  background-color: #14120b;
+  border: 1px solid #2a271f;
+  color: #f7f7f4;
 }
 
 .btn-primary:hover {
-  background-color: #4F46E5;
+  background-color: #14120b;
 }
 
 .btn-primary:disabled {
-  background-color: #6B7280;
+  background-color: #3d3930;
   cursor: not-allowed;
 }
 
 .btn-ghost {
-  color: #E5E7EB;
-  border: 1px solid #20232a;
+  color: #f7f7f4;
+  border: 1px solid #2a271f;
   background-color: transparent;
 }
 
 .btn-ghost:hover {
-  background-color: #16181d;
+  background-color: #252218;
 }
 
 .btn-danger {
@@ -285,9 +286,9 @@ main {
 
 /* Apply button classes to existing buttons */
 button {
-  background-color: #5458E8;
-  color: white;
-  border: none;
+  background-color: #14120b;
+  color: #f7f7f4;
+  border: 1px solid #2a271f;
   padding: 10px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -297,16 +298,16 @@ button {
 }
 
 button:hover {
-  background-color: #4F46E5;
+  background-color: #14120b;
 }
 
 button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+  box-shadow: none;
 }
 
 button:disabled {
-  background-color: #6B7280;
+  background-color: #3d3930;
   cursor: not-allowed;
 }
 
@@ -327,12 +328,12 @@ button:disabled {
 
 .clear-button {
   background-color: transparent;
-  border: 1px solid #20232a;
-  color: #E5E7EB;
+  border: 1px solid #2a271f;
+  color: #f7f7f4;
 }
 
 .clear-button:hover {
-  background-color: #16181d;
+  background-color: #252218;
 }
 
 /* Layout Components */
@@ -387,7 +388,7 @@ button:disabled {
 .loading {
   text-align: center;
   margin-bottom: 24px;
-  color: #9CA3AF;
+  color: #9d9a92;
   font-size: 14px;
 }
 
@@ -401,9 +402,9 @@ button:disabled {
   width: 100%;
   padding: 16px;
   background-color: transparent;
-  border: 2px dashed #20232a;
+  border: 2px dashed #2a271f;
   border-radius: 6px;
-  color: #E5E7EB;
+  color: #f7f7f4;
   cursor: pointer;
   transition: border-color 0.2s ease;
   margin-bottom: 8px;
@@ -411,12 +412,12 @@ button:disabled {
 
 .file-upload input:hover,
 .file-upload-comparison input:hover {
-  border-color: #6366F1;
+  border-color: #3d3930;
 }
 
 .note {
   font-size: 12px;
-  color: #9CA3AF;
+  color: #9d9a92;
 }
 
 /* Validation Results */
@@ -459,14 +460,14 @@ button:disabled {
 }
 
 .schema-input {
-  background-color: #16181d;
+  background-color: #1c1a13;
   padding: 20px;
   border-radius: 6px;
-  border: 1px solid #20232a;
+  border: 1px solid #2a271f;
 }
 
 .schema-input label {
-  color: #E5E7EB;
+  color: #f7f7f4;
   font-weight: 500;
   margin-bottom: 8px;
   display: block;
@@ -484,10 +485,10 @@ button:disabled {
 /* Comparison Results */
 .comparison-result {
   margin-top: 32px;
-  background-color: #16181d;
+  background-color: #1c1a13;
   padding: 24px;
   border-radius: 6px;
-  border: 1px solid #20232a;
+  border: 1px solid #2a271f;
 }
 
 .result-summary {
@@ -517,7 +518,7 @@ button:disabled {
 
 .schema-names {
   font-weight: 600;
-  color: #E5E7EB;
+  color: #f7f7f4;
   font-size: 14px;
 }
 
@@ -581,11 +582,11 @@ button:disabled {
 }
 
 .differences-display {
-  background-color: #0f1115;
+  background-color: #14120b;
   padding: 16px;
   border-radius: 6px;
-  border: 1px solid #20232a;
-  color: #E5E7EB;
+  border: 1px solid #2a271f;
+  color: #f7f7f4;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 12px;
   line-height: 1.5;
@@ -601,21 +602,21 @@ button:disabled {
 }
 
 .file-upload-comparison {
-  background-color: #16181d;
+  background-color: #1c1a13;
   padding: 24px;
   border-radius: 6px;
-  border: 2px dashed #20232a;
+  border: 2px dashed #2a271f;
   text-align: center;
   margin-bottom: 24px;
   transition: border-color 0.2s ease;
 }
 
 .file-upload-comparison:hover {
-  border-color: #6366F1;
+  border-color: #3d3930;
 }
 
 .file-upload-comparison label {
-  color: #E5E7EB;
+  color: #f7f7f4;
   font-weight: 500;
   margin-bottom: 12px;
   display: block;
@@ -625,7 +626,7 @@ button:disabled {
 /* Config Details */
 .config-details {
   margin-top: 24px;
-  border-top: 1px solid #20232a;
+  border-top: 1px solid #2a271f;
   padding-top: 24px;
 }
 
@@ -671,14 +672,14 @@ button:disabled {
 }
 
 ::-webkit-scrollbar-track {
-  background: #16181d;
+  background: #1c1a13;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #20232a;
+  background: #2a271f;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6B7280;
+  background: #3d3930;
 }
