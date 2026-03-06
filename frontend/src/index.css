@@ -9,7 +9,7 @@ body {
 
 code {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  background-color: rgba(90, 158, 143, 0.1);
+  background-color: rgba(61, 57, 48, 0.1);
   padding: 2px 6px;
   border-radius: 4px;
   color: #8fc4b7;
@@ -28,11 +28,11 @@ code {
 
 /* Selection styling */
 ::selection {
-  background-color: rgba(90, 158, 143, 0.3);
+  background-color: rgba(61, 57, 48, 0.3);
   color: #ffffff;
 }
 
 ::-moz-selection {
-  background-color: rgba(90, 158, 143, 0.3);
+  background-color: rgba(61, 57, 48, 0.3);
   color: #ffffff;
 }
